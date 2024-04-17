@@ -1,14 +1,24 @@
-class color():
+from typing import Union
+
+
+class color(str):
     """
     color((r, g, b))\n
     color("#000000")
     """
-    def __init__(self, rgb:tuple|str) -> str:
-        self.value = (rgb if type(rgb) == tuple else tuple(int((rgb.lstrip('#'))[i:i+2], 16) for i in (0, 2, 4)))
-        return
+    def __init__(self, rgb:Union[tuple[int, int, int], str]) -> None:
+        if not isinstance(rgb, (str, tuple)):
+            raise TypeError(rgb, "have to be an hexa color or a tuple")
+        
+        self.value:tuple[int, int, int] = (0, 0, 0)
+
+        if isinstance(rgb, str):
+            self.value = (int((rgb.lstrip('#'))[:2], 16), int((rgb.lstrip('#'))[2:4], 16), int((rgb.lstrip('#'))[4:6], 16))
+        else:
+            self.value = rgb
     
     def __eq__(self, __value: object) -> bool:
-        return (type(__value) == color) and (self.value == __value.value)
+        return isinstance(__value, color) and (self.value == __value.value)
     
     def __str__(self) -> str:
         return ('#{:02x}{:02x}{:02x}'.format(*self.value)).upper()
@@ -16,15 +26,15 @@ class color():
     def __repr__(self) -> str:
         return self.__str__()
     
-    def __sub__(self, other):
-        if type(other) == color:
-            return color(tuple((a-b) for a,b in list(zip(self.value, other.value))))
+    def __sub__(self, other) -> 'color':
+        if isinstance(other, color):
+            return color(tuple((a-b) for a,b in list(zip(self.value, other.value)))) # type: ignore
         else:
             raise ValueError("Unsupported operand type")
         
-    def __add__(self, other):
-        if type(other) == color:
-            return color(tuple((a+b) for a,b in list(zip(self.value, other.value))))
+    def __add__(self, other) -> 'color':
+        if isinstance(other, color):
+            return color(tuple((a+b) for a,b in list(zip(self.value, other.value)))) # type: ignore
         else:
             raise ValueError("Unsupported operand type")
 
@@ -41,10 +51,7 @@ class color():
 
         v = max_value * 100
 
-        if max_value != 0:
-            s = ((max_value - min_value) / max_value) * 100
-        else:
-            s = 0
+        s = max_value or ((max_value - min_value) / max_value) * 100
 
         if max_value == min_value:
             h = 0
@@ -70,7 +77,7 @@ def color_moy(*args:color) -> color:
             som += item
             i+=1
         return som//i
-    return color(tuple(map(moy, zip(*map(lambda x: x.value, args)))))
+    return color(tuple(map(moy, zip(*map(lambda x: x.value, args))))) # type: ignore
 
 
 def rgb_distance(color1:color, color2:color) -> float:
@@ -138,13 +145,13 @@ def hsv_to_rgb(h, s, v):
 
     return r, g, b
 
-def getpourcent(form:color, to:color, c:color) -> float:
+def getpourcent(form:color, to:color, c:color) -> list[float]:
     
-    one_ = tuple(map(clamp, form.hsv()))
-    two_ = tuple(map(clamp, to.hsv()))
-    trois = tuple(map(clamp, c.hsv()))
+    one_:tuple[int, ...] = tuple(map(clamp, form.hsv()))
+    two_:tuple[int, ...] = tuple(map(clamp, to.hsv()))
+    trois:tuple[int, ...] = tuple(map(clamp, c.hsv()))
 
-    f = []
+    f:list[float] = []
 
     for i in range(3):
         one = min(one_, two_, key=lambda x: x[i])
@@ -159,7 +166,7 @@ def getpourcent(form:color, to:color, c:color) -> float:
 
     return f
 
-def getcolor(form:color, to:color, percent:list[int]) -> color:
+def getcolor(form:color, to:color, percent:list[float]) -> color:
 
     f = []
     for i in range(3):

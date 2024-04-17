@@ -22,7 +22,7 @@ sens = 1
 
 
 
-def draw(image_path:str="", path_result:str="result.png", palette:list[color]|list[str]=[], soft_edges:bool=False) -> str:
+def draw(image_path:str="", path_result:str="result.png", palette:Union[list[color], list[str]]=[], soft_edges:bool=False) -> str:
     
     # Test if the file path is correct else raise error
     # Then convert the image to rgb and prepare the other image
@@ -37,7 +37,7 @@ def draw(image_path:str="", path_result:str="result.png", palette:list[color]|li
     
     #list(map(color, [ "#5DA5B3", "#E0E2E8", "#B0C0D4", "#4E5772", "#1C1C1F" ]))
     # Setting up our constant
-    PAL = ([color("FFFFFF"), color("000000")] + (palette if type(pal9[0]) == color else list(map(color, palette))))     # custom palette
+    PAL:list[color] = [color("FFFFFF"), color("000000")] + list(map(color, palette))     # custom palette
     VALUES  = ([color("FFFFFF"), color("000000")] + list(map(color, [ "#FF0000", "#FF00FF", "#0000FF", "#00FFFF", "#00FF00" ])))     # beacon of the circle of color
     WIDTH, HEIGHT = image.size
 
